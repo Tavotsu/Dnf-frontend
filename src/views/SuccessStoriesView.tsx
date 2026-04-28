@@ -33,11 +33,24 @@ const SUCCESS_STORIES = [
 ];
 
 export const SuccessStoriesView = () => {
+  const [stories, setStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
+    const fetchStories = async () => {
+      try {
+        const response = await fetch('/api/success-stories');
+        if (response.ok) {
+          const data = await response.json();
+          setStories(data);
+        }
+      } catch (err) {
+        console.error('Error fetching stories:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStories();
   }, []);
 
   return (
@@ -60,7 +73,7 @@ export const SuccessStoriesView = () => {
           </div>
         ) : (
           <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-outline/30 before:to-transparent">
-            {SUCCESS_STORIES.map((story) => (
+            {stories.map((story) => (
               <div key={story.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                 <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-surface-low bg-primary text-surface shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
                   <HeartHandshake size={16} />

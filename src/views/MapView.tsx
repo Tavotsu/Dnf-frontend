@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -49,36 +49,63 @@ export const MapView = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
-
-  const suggestions = searchQuery.length > 0 
-    ? MOCK_PETS_DATA.filter(pet => 
-        pet.name.toLowerCase().startsWith(searchQuery.toLowerCase())
-      ).slice(0, 5)
-    : [];
+  const [pets, setPets] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [filterType, setFilterType] = useState('all');
   const [showLost, setShowLost] = useState(true);
   const [showFound, setShowFound] = useState(true);
 
-  const filteredPets = MOCK_PETS_DATA.filter(pet => {
+  const fetchPets = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/pets?status=${showLost && !showFound ? 'lost' : !showLost && showFound ? 'found' : ''}&type=${filterType === 'all' ? '' : filterType}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPets(data);
+      }
+    } catch (err) {
+      console.error('Error fetching pets:', err);
+    }
+  }, [showLost, showFound, filterType]);
+
+  useEffect(() => {
+    fetchPets();
+  }, [fetchPets]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.length < 1) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(`/api/pets/suggestions?q=${searchQuery}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSuggestions(data);
+        }
+      } catch (err) {
+        console.error('Error fetching suggestions:', err);
+      }
+    };
+
+    const timer = setTimeout(fetchSuggestions, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const filteredPets = pets.filter(pet => {
     const matchesSearch = 
       pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       pet.breed.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = 
-      (pet.status === 'lost' && showLost) || 
-      (pet.status === 'found' && showFound);
-
-    const matchesType = filterType === 'all' || pet.type.toLowerCase() === filterType.toLowerCase();
-
-    return matchesSearch && matchesStatus && matchesType;
+    return matchesSearch;
   });
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
-    // 1. Check if it's a pet name
-    const foundPet = MOCK_PETS_DATA.find(p => p.name.toLowerCase() === searchQuery.toLowerCase());
+    // 1. Check if it's a pet name in currently loaded pets
+    const foundPet = pets.find(p => p.name.toLowerCase() === searchQuery.toLowerCase());
     if (foundPet) {
       setMapCenter(foundPet.coordinates);
       return;

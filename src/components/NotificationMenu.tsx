@@ -40,7 +40,7 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 
 export const NotificationMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -55,8 +55,36 @@ export const NotificationMenu = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const markAllRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch('/api/notifications');
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error('Error fetching notifications:', err);
+      }
+    };
+
+    fetchNotifications();
+    // Poll every minute
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAllRead = async () => {
+    try {
+      const response = await fetch('/api/notifications/read-all', {
+        method: 'PATCH'
+      });
+      if (response.ok) {
+        setNotifications(notifications.map(n => ({ ...n, read: true })));
+      }
+    } catch (err) {
+      console.error('Error marking as read:', err);
+    }
   };
 
   return (

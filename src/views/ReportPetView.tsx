@@ -24,7 +24,51 @@ const LocationMarker = ({ position, setPosition }: { position: [number, number],
 
 export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, navigate: (v: string) => void }) => {
   const [position, setPosition] = useState<[number, number]>([-41.4693, -72.9424]);
-  
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'dog',
+    breed: '',
+    color: '',
+    lastSeenLocation: '',
+    date: '',
+    time: '',
+    description: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/pets/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          coordinates: position,
+          images: [] // In a real app, this would handle actual file uploads
+        })
+      });
+
+      if (response.ok) {
+        navigate('profile');
+      } else {
+        alert('Error al publicar el reporte.');
+      }
+    } catch (err) {
+      console.error('Error reporting pet:', err);
+      alert('Error de conexión.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   if (!isLoggedIn) {
     return (
       <div className="flex-1 flex items-center justify-center bg-surface-low p-6">
@@ -53,7 +97,7 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
           <p className="text-text-variant text-lg">Proporciona la mayor cantidad de detalles posible para ayudar a la comunidad a encontrarla.</p>
         </div>
 
-        <form className="bg-surface rounded-3xl p-8 md:p-10 shadow-sm border border-outline/10 space-y-8" onSubmit={(e) => { e.preventDefault(); navigate('profile'); }}>
+        <form className="bg-surface rounded-3xl p-8 md:p-10 shadow-sm border border-outline/10 space-y-8" onSubmit={handleSubmit}>
           {/* Photos */}
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-text flex items-center gap-2 border-b border-outline/20 pb-2">
@@ -81,12 +125,25 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text">Nombre de la mascota</label>
-                <input type="text" required className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" placeholder="Ej. Max" />
+                <input 
+                  type="text" 
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required 
+                  className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" 
+                  placeholder="Ej. Max" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text">Tipo de mascota</label>
-                <select required className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow appearance-none">
-                  <option value="">Selecciona un tipo</option>
+                <select 
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  required 
+                  className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow appearance-none"
+                >
                   <option value="dog">Perro</option>
                   <option value="cat">Gato</option>
                   <option value="bird">Ave</option>
@@ -95,11 +152,26 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text">Raza (Opcional)</label>
-                <input type="text" className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" placeholder="Ej. Beagle" />
+                <input 
+                  type="text" 
+                  name="breed"
+                  value={formData.breed}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" 
+                  placeholder="Ej. Beagle" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text">Color principal</label>
-                <input type="text" required className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" placeholder="Ej. Blanco con manchas marrones" />
+                <input 
+                  type="text" 
+                  name="color"
+                  value={formData.color}
+                  onChange={handleInputChange}
+                  required 
+                  className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" 
+                  placeholder="Ej. Blanco con manchas marrones" 
+                />
               </div>
             </div>
           </section>
@@ -114,7 +186,15 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
                 <label className="text-sm font-medium text-text">Referencia de ubicación</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-                  <input type="text" required className="w-full pl-10 pr-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" placeholder="Ej. Parque Central, cerca de la fuente" />
+                  <input 
+                    type="text" 
+                    name="lastSeenLocation"
+                    value={formData.lastSeenLocation}
+                    onChange={handleInputChange}
+                    required 
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" 
+                    placeholder="Ej. Parque Central, cerca de la fuente" 
+                  />
                 </div>
               </div>
 
@@ -144,14 +224,27 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
                 <label className="text-sm font-medium text-text">Fecha de extravío</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-                  <input type="date" required className="w-full pl-10 pr-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" />
+                  <input 
+                    type="date" 
+                    name="date"
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    required 
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" 
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text">Hora aproximada</label>
                 <div className="relative">
                   <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-                  <input type="time" className="w-full pl-10 pr-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" />
+                  <input 
+                    type="time" 
+                    name="time"
+                    value={formData.time}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow" 
+                  />
                 </div>
               </div>
             </div>
@@ -165,7 +258,14 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-text">Características distintivas o médicas</label>
-                <textarea rows={3} className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow resize-none" placeholder="Ej. Tiene un collar rojo, cojea de la pata trasera derecha, necesita medicación..."></textarea>
+                <textarea 
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  rows={3} 
+                  className="w-full px-4 py-3 bg-background border border-outline/30 rounded-xl focus:ring-2 focus:ring-primary/50 outline-none transition-shadow resize-none" 
+                  placeholder="Ej. Tiene un collar rojo, cojea de la pata trasera derecha, necesita medicación..."
+                ></textarea>
               </div>
             </div>
           </section>
@@ -174,7 +274,12 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
             <button type="button" onClick={() => navigate('home')} className="px-6 py-3 rounded-xl font-bold text-text-variant hover:bg-surface-high transition-colors">
               Cancelar
             </button>
-            <button type="submit" className="bg-primary text-surface px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity shadow-md shadow-primary/20">
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="bg-primary text-surface px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity shadow-md shadow-primary/20 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isSubmitting && <div className="w-4 h-4 border-2 border-surface/30 border-t-surface rounded-full animate-spin"></div>}
               Publicar Reporte
             </button>
           </div>

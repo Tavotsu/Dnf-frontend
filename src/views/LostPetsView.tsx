@@ -1,25 +1,53 @@
-import React, { useState } from 'react';
-import { Search, MapPin, ArrowLeft } from 'lucide-react';
-import { IMAGES, MOCK_PETS_DATA } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin } from 'lucide-react';
 
 export const LostPetsView = ({ navigate }: { navigate: (v: string) => void }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [pets, setPets] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const suggestions = searchQuery.length > 0 
-    ? MOCK_PETS_DATA.filter(pet => 
-        pet.status === 'lost' && 
-        pet.name.toLowerCase().startsWith(searchQuery.toLowerCase())
-      ).slice(0, 5)
-    : [];
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/pets?status=lost&query=${searchQuery}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPets(data);
+        }
+      } catch (err) {
+        console.error('Error fetching pets:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const filteredPets = MOCK_PETS_DATA.filter(pet => 
-    pet.status === 'lost' && (
-      pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.location.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
+    const timer = setTimeout(fetchPets, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.length < 1) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(`/api/pets/suggestions?q=${searchQuery}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSuggestions(data);
+        }
+      } catch (err) {
+        console.error('Error fetching suggestions:', err);
+      }
+    };
+
+    const timer = setTimeout(fetchSuggestions, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const handleSuggestionClick = (name: string) => {
     setSearchQuery(name);
@@ -75,35 +103,47 @@ export const LostPetsView = ({ navigate }: { navigate: (v: string) => void }) =>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPets.map((pet) => (
-            <div key={pet.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-outline/10 group cursor-pointer" onClick={() => navigate('detail')}>
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={pet.image} 
-                  alt={pet.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute top-3 right-3 bg-error text-surface text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                  Perdido
+          {isLoading ? (
+            [...Array(8)].map((_, i) => (
+              <div key={i} className="bg-surface rounded-2xl h-80 animate-pulse border border-outline/10">
+                <div className="h-48 bg-surface-high rounded-t-2xl"></div>
+                <div className="p-5 space-y-3">
+                  <div className="h-6 w-1/2 bg-surface-high rounded"></div>
+                  <div className="h-4 w-3/4 bg-surface-high rounded"></div>
                 </div>
               </div>
-              <div className="p-5 space-y-3">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-serif text-xl font-bold text-text">{pet.name}</h3>
-                  <span className="text-xs font-medium text-text-muted bg-surface-high px-2 py-1 rounded-md">{pet.timeAgo}</span>
+            ))
+          ) : (
+            pets.map((pet) => (
+              <div key={pet.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-outline/10 group cursor-pointer" onClick={() => navigate('detail')}>
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={pet.image} 
+                    alt={pet.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute top-3 right-3 bg-error text-surface text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                    {pet.status === 'lost' ? 'Perdido' : 'Encontrado'}
+                  </div>
                 </div>
-                <p className="text-sm text-text-variant">{pet.type} • {pet.breed} • {pet.gender}</p>
-                <div className="flex items-center gap-2 text-sm text-text-muted mt-2 pt-3 border-t border-outline/10">
-                  <MapPin size={16} className="text-primary" />
-                  <span className="truncate">{pet.location}</span>
+                <div className="p-5 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-serif text-xl font-bold text-text">{pet.name}</h3>
+                    <span className="text-xs font-medium text-text-muted bg-surface-high px-2 py-1 rounded-md">{pet.timeAgo}</span>
+                  </div>
+                  <p className="text-sm text-text-variant">{pet.type} • {pet.breed} • {pet.gender}</p>
+                  <div className="flex items-center gap-2 text-sm text-text-muted mt-2 pt-3 border-t border-outline/10">
+                    <MapPin size={16} className="text-primary" />
+                    <span className="truncate">{pet.location}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         
-        {filteredPets.length === 0 && (
+        {!isLoading && pets.length === 0 && (
           <div className="text-center py-20 bg-surface rounded-3xl border border-dashed border-outline/30">
             <p className="text-text-variant font-medium">No se encontraron mascotas que coincidan con tu búsqueda.</p>
           </div>

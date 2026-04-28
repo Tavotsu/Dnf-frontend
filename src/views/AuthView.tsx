@@ -11,21 +11,40 @@ export const AuthView = ({ type, navigate, setIsLoggedIn }: { type: 'login' | 'r
   const GENERIC_EMAIL = 'admin@test.com';
   const GENERIC_PASSWORD = 'password123';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    if (isLogin) {
-      if (email === GENERIC_EMAIL && password === GENERIC_PASSWORD) {
+    try {
+      if (isLogin) {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('token', data.token);
+          setIsLoggedIn(true);
+          navigate('home');
+        } else {
+          const data = await response.json();
+          setError(data.message || 'Credenciales incorrectas.');
+        }
+      } else {
+        // Mock registration also uses the BFF in a real scenario
+        // but for now we'll just simulate it
         setIsLoggedIn(true);
         navigate('home');
-      } else {
-        setError('Credenciales incorrectas. Prueba con admin@test.com / password123');
       }
-    } else {
-      // For registration mock, just log in
-      setIsLoggedIn(true);
-      navigate('home');
+    } catch (err) {
+      setError('Error al conectar con el servidor.');
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -111,7 +130,12 @@ export const AuthView = ({ type, navigate, setIsLoggedIn }: { type: 'login' | 'r
             </div>
           )}
 
-          <button type="submit" className="w-full bg-primary text-surface py-3 rounded-xl font-bold hover:opacity-90 transition-opacity shadow-md shadow-primary/20 mt-2">
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className="w-full bg-primary text-surface py-3 rounded-xl font-bold hover:opacity-90 transition-opacity shadow-md shadow-primary/20 mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isLoading && <div className="w-4 h-4 border-2 border-surface/30 border-t-surface rounded-full animate-spin"></div>}
             {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
           </button>
         </form>
