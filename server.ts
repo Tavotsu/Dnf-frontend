@@ -3,6 +3,9 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +39,7 @@ async function startServer() {
 
   app.get('/api/pets', async (req, res) => {
     try {
-      const response = await api.get('/pets', { params: req.query });
+      const response = await api.get('/mascotas', { params: req.query });
       res.json(response.data);
     } catch (error: any) {
       console.warn(`[BFF] Backend Spring Boot no disponible en ${SPRING_BOOT_URL}. Usando Mock Data.`);
@@ -46,7 +49,7 @@ async function startServer() {
 
   app.post('/api/pets/report', async (req, res) => {
     try {
-      const response = await api.post('/pets/report', req.body);
+      const response = await api.post('/mascotas/report', req.body);
       res.status(response.status).json(response.data);
     } catch (error: any) {
       const newPet = { id: mockPets.length + 1, ...req.body, status: 'lost', timeAgo: 'Recién publicado' };
@@ -57,7 +60,7 @@ async function startServer() {
 
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const response = await api.post('/auth/login', req.body);
+      const response = await api.post('/usuarios/login', req.body);
       res.json(response.data);
     } catch (error: any) {
       // Credenciales de prueba si el backend falla
@@ -71,7 +74,7 @@ async function startServer() {
 
   app.get('/api/notifications', async (req, res) => {
     try {
-      const response = await api.get('/notifications');
+      const response = await api.get('/notificaciones');
       res.json(response.data);
     } catch {
       res.json(mockNotifications);
