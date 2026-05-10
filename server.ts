@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // --- Configuración y Datos de Respaldo (Fallback) ---
-const SPRING_BOOT_URL = process.env.VITE_SPRING_BOOT_API_URL || 'http://localhost:8080/api';
+const SPRING_BOOT_URL = process.env.VITE_SPRING_BOOT_API_URL || 'http://localhost:8080';
 
 // Datos Mock (se usarán si el backend no responde o no está configurado)
 let mockPets = [
@@ -39,7 +39,7 @@ async function startServer() {
 
   app.get('/api/pets', async (req, res) => {
     try {
-      const response = await api.get('/mascotas', { params: req.query });
+      const response = await api.get('/api/mascotas', { params: req.query });
       res.json(response.data);
     } catch (error: any) {
       console.warn(`[BFF] Backend Spring Boot no disponible en ${SPRING_BOOT_URL}. Usando Mock Data.`);
@@ -47,9 +47,21 @@ async function startServer() {
     }
   });
 
+  app.get('/api/pets/suggestions', async (req, res) => {
+    try {
+      const response = await api.get('/api/mascotas/suggestions', { params: req.query });
+      res.json(response.data);
+    } catch {
+      // Filtra mock como fallback para sugerencias
+      const q = String(req.query.q || '').toLowerCase();
+      const suggestions = mockPets.filter(p => p.name.toLowerCase().includes(q));
+      res.json(suggestions);
+    }
+  });
+
   app.post('/api/pets/report', async (req, res) => {
     try {
-      const response = await api.post('/mascotas/report', req.body);
+      const response = await api.post('/api/mascotas/report', req.body);
       res.status(response.status).json(response.data);
     } catch (error: any) {
       const newPet = { id: mockPets.length + 1, ...req.body, status: 'lost', timeAgo: 'Recién publicado' };
@@ -60,7 +72,7 @@ async function startServer() {
 
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const response = await api.post('/usuarios/login', req.body);
+      const response = await api.post('/api/usuarios/login', req.body);
       res.json(response.data);
     } catch (error: any) {
       // Credenciales de prueba si el backend falla
@@ -74,7 +86,7 @@ async function startServer() {
 
   app.get('/api/notifications', async (req, res) => {
     try {
-      const response = await api.get('/notificaciones');
+      const response = await api.get('/api/notificaciones');
       res.json(response.data);
     } catch {
       res.json(mockNotifications);
@@ -83,7 +95,7 @@ async function startServer() {
 
   app.get('/api/success-stories', async (req, res) => {
     try {
-      const response = await api.get('/success-stories');
+      const response = await api.get('/api/success-stories');
       res.json(response.data);
     } catch {
       res.json([{ id: 1, title: "Historias Offline", content: "El backend no está conectado aún.", image: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=800" }]);
