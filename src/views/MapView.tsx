@@ -61,9 +61,12 @@ export const MapView = () => {
       if (response.ok) {
         const data = await response.json();
         setPets(data);
+      } else {
+        setPets(MOCK_PETS_DATA);
       }
     } catch (err) {
       console.error('Error fetching pets:', err);
+      setPets(MOCK_PETS_DATA);
     }
   }, [showLost, showFound, filterType]);
 
