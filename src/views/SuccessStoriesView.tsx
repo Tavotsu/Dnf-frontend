@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../utils/api';
 import { HeartHandshake, MapPin } from 'lucide-react';
 import { IMAGES } from '../constants';
 
@@ -39,7 +40,7 @@ export const SuccessStoriesView = () => {
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        const response = await fetch('/api/success-stories');
+        const response = await fetchWithAuth('/api/success-stories');
         if (response.ok) {
           const data = await response.json();
           setStories(data);

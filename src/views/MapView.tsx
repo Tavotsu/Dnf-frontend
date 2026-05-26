@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { fetchWithAuth } from '../utils/api';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -57,7 +58,7 @@ export const MapView = () => {
 
   const fetchPets = useCallback(async () => {
     try {
-      const response = await fetch(`/api/pets?status=${showLost && !showFound ? 'lost' : !showLost && showFound ? 'found' : ''}&type=${filterType === 'all' ? '' : filterType}`);
+      const response = await fetchWithAuth(`/api/pets?status=${showLost && !showFound ? 'lost' : !showLost && showFound ? 'found' : ''}&type=${filterType === 'all' ? '' : filterType}`);
       if (response.ok) {
         const data = await response.json();
         setPets(data);
@@ -81,7 +82,7 @@ export const MapView = () => {
         return;
       }
       try {
-        const response = await fetch(`/api/pets/suggestions?q=${searchQuery}`);
+        const response = await fetchWithAuth(`/api/pets/suggestions?q=${searchQuery}`);
         if (response.ok) {
           const data = await response.json();
           setSuggestions(data);
@@ -117,7 +118,7 @@ export const MapView = () => {
     // 2. Otherwise search for location using Nominatim
     setIsSearching(true);
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`);
+      const response = await fetchWithAuth(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`);
       const data = await response.json();
       if (data && data.length > 0) {
         setMapCenter([parseFloat(data[0].lat), parseFloat(data[0].lon)]);

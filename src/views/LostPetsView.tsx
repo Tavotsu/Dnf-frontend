@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { fetchWithAuth } from '../utils/api';
 import { Search, MapPin } from 'lucide-react';
 
 export const LostPetsView = ({ navigate }: { navigate: (v: string) => void }) => {
@@ -12,7 +13,7 @@ export const LostPetsView = ({ navigate }: { navigate: (v: string) => void }) =>
     const fetchPets = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/pets?status=lost&query=${searchQuery}`);
+        const response = await fetchWithAuth(`/api/pets?status=lost&query=${searchQuery}`);
         if (response.ok) {
           const data = await response.json();
           setPets(data);
@@ -35,7 +36,7 @@ export const LostPetsView = ({ navigate }: { navigate: (v: string) => void }) =>
         return;
       }
       try {
-        const response = await fetch(`/api/pets/suggestions?q=${searchQuery}`);
+        const response = await fetchWithAuth(`/api/pets/suggestions?q=${searchQuery}`);
         if (response.ok) {
           const data = await response.json();
           setSuggestions(data);

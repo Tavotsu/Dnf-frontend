@@ -60,7 +60,7 @@ describe('LostPetsView Component', () => {
     fireEvent.change(searchInput, { target: { value: 'Max' } });
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/pets/suggestions?q=Max');
+      expect(global.fetch).toHaveBeenCalledWith('/api/pets/suggestions?q=Max', expect.any(Object));
     });
   });
 });

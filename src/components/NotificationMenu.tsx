@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { fetchWithAuth } from '../utils/api';
 import { Bell, CheckCircle, Info, AlertTriangle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -58,7 +59,7 @@ export const NotificationMenu = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('/api/notifications');
+        const response = await fetchWithAuth('/api/notifications');
         if (response.ok) {
           const data = await response.json();
           setNotifications(data);
@@ -76,7 +77,7 @@ export const NotificationMenu = () => {
 
   const markAllRead = async () => {
     try {
-      const response = await fetch('/api/notifications/read-all', {
+      const response = await fetchWithAuth('/api/notifications/read-all', {
         method: 'PATCH'
       });
       if (response.ok) {

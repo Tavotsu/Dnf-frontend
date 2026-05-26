@@ -87,7 +87,7 @@ describe('MapView Component', () => {
     fireEvent.click(lostCheckbox);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/pets?status=found&type=');
+      expect(global.fetch).toHaveBeenCalledWith('/api/pets?status=found&type=', expect.any(Object));
     });
   });
 });

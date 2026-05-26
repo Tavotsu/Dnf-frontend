@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fetchWithAuth } from '../utils/api';
 import { Camera, MapPin, Calendar, Clock, FileText, AlertCircle, Info } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -41,7 +42,7 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/pets/report', {
+      const response = await fetchWithAuth('/api/pets/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
