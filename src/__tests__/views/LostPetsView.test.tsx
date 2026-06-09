@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { LostPetsView } from './LostPetsView';
-import { MOCK_PETS_DATA } from '../constants';
+import { LostPetsView } from '../../views/LostPetsView';
+import { MOCK_PETS_DATA } from '../../constants';
 
 describe('LostPetsView Component', () => {
   const mockNavigate = vi.fn();

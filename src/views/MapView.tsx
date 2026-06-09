@@ -45,11 +45,11 @@ const CustomZoomControls = () => {
   );
 };
 
-export const MapView = () => {
+export const MapView = ({ navigate }: { navigate: (v: string, data?: any) => void }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number] | null>([-41.4693, -72.9424]);
   const [pets, setPets] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [filterType, setFilterType] = useState('all');
@@ -61,7 +61,14 @@ export const MapView = () => {
       const response = await fetchWithAuth(`/api/pets?status=${showLost && !showFound ? 'lost' : !showLost && showFound ? 'found' : ''}&type=${filterType === 'all' ? '' : filterType}`);
       if (response.ok) {
         const data = await response.json();
-        setPets(data);
+        // Mapear los datos de la API para asegurar que tienen la propiedad coordinates esperada por Leaflet
+        const mappedData = data.map((pet: any) => ({
+          ...pet,
+          coordinates: pet.latitude != null && pet.longitude != null 
+            ? [pet.latitude, pet.longitude] 
+            : null
+        })).filter((pet: any) => pet.coordinates != null); // Omitir mascotas sin coordenadas válidas
+        setPets(mappedData);
       } else {
         setPets(MOCK_PETS_DATA);
       }
@@ -98,8 +105,8 @@ export const MapView = () => {
 
   const filteredPets = pets.filter(pet => {
     const matchesSearch = 
-      pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.breed.toLowerCase().includes(searchQuery.toLowerCase());
+      (pet.name && pet.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (pet.breed && pet.breed.toLowerCase().includes(searchQuery.toLowerCase()));
     
     return matchesSearch;
   });
@@ -258,7 +265,7 @@ export const MapView = () => {
         </div>
 
         <MapContainer 
-          center={[-41.4693, -72.9424]} 
+          center={mapCenter || [-41.4693, -72.9424]} 
           zoom={13} 
           zoomControl={false}
           className="w-full h-full z-0"
@@ -275,9 +282,12 @@ export const MapView = () => {
               key={pet.id} 
               position={pet.coordinates} 
               icon={pet.status === 'lost' ? lostIcon : foundIcon}
+              eventHandlers={{
+                click: () => navigate('detail', { id: pet.id })
+              }}
             >
               <Popup className="rounded-xl">
-                <div className="font-bold text-text">{pet.name}</div>
+                <div className="font-bold text-text cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('detail', { id: pet.id })}>{pet.name}</div>
                 <div className="text-xs text-text-muted">{pet.status === 'lost' ? 'Perdido' : 'Encontrado'} • {pet.timeAgo}</div>
                 <div className="text-[10px] text-text-variant mt-1 italic">{pet.location}</div>
               </Popup>

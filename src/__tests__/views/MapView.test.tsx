@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MapView } from './MapView';
-import { MOCK_PETS_DATA } from '../constants';
+import { MapView } from '../../views/MapView';
+import { MOCK_PETS_DATA } from '../../constants';
 
 // Mock react-leaflet components
 vi.mock('react-leaflet', () => ({
@@ -39,7 +39,7 @@ describe('MapView Component', () => {
   it('fetches pets on mount and displays results count', async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => MOCK_PETS_DATA,
+      json: async () => MOCK_PETS_DATA.map(pet => ({ ...pet, latitude: pet.coordinates[0], longitude: pet.coordinates[1] })),
     });
 
     render(<MapView />);
@@ -53,7 +53,7 @@ describe('MapView Component', () => {
   it('handles search form submission', async () => {
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: async () => MOCK_PETS_DATA,
+      json: async () => MOCK_PETS_DATA.map(pet => ({ ...pet, latitude: pet.coordinates[0], longitude: pet.coordinates[1] })),
     });
 
     render(<MapView />);
@@ -72,7 +72,7 @@ describe('MapView Component', () => {
   it('toggles filters', async () => {
     (global.fetch as any).mockResolvedValue({
       ok: true,
-      json: async () => MOCK_PETS_DATA,
+      json: async () => MOCK_PETS_DATA.map(pet => ({ ...pet, latitude: pet.coordinates[0], longitude: pet.coordinates[1] })),
     });
 
     render(<MapView />);
@@ -87,7 +87,7 @@ describe('MapView Component', () => {
     fireEvent.click(lostCheckbox);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/pets?status=found&type=', expect.any(Object));
+      expect(global.fetch).toHaveBeenCalledWith('/api/pets?status=found&type=', expect.anything());
     });
   });
 });

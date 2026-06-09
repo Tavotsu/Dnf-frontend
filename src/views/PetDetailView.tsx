@@ -1,8 +1,51 @@
 import React from 'react';
+import { fetchWithAuth } from '../utils/api';
 import { MapPin, Share2, MessageCircle, ArrowLeft, Clock, AlertCircle } from 'lucide-react';
 import { IMAGES } from '../constants';
 
-export const PetDetailView = ({ navigate }: { navigate: (v: string) => void }) => {
+export const PetDetailView = ({ navigate, petId }: { navigate: (v: string) => void, petId?: number }) => {
+  const [pet, setPet] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadPet = async () => {
+      if (!petId) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetchWithAuth(`/api/pets/${petId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setPet(data);
+        }
+      } catch (err) {
+        console.error("Error loading pet details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPet();
+  }, [petId]);
+
+  if (loading) {
+    return <div className="flex-1 bg-surface-low py-8 px-6 flex justify-center items-center">Cargando...</div>;
+  }
+
+  // Fallback a los datos antiguos (Max) si no hay petId o no se encontró
+  const displayPet = pet || {
+    name: "Max",
+    type: "Perro",
+    breed: "Beagle",
+    gender: "Macho",
+    color: "Tricolor",
+    description: "Max es muy amigable pero puede estar asustado. Llevaba un collar azul con una placa en forma de hueso, pero sin número de teléfono actualizado. Tiene una pequeña cicatriz en la oreja izquierda.",
+    status: "lost",
+    timeAgo: "Hace 2 días",
+    location: "Parque Central, cerca de la entrada principal. Visto por última vez corriendo hacia el norte.",
+    image: IMAGES.petMax
+  };
+
   return (
     <div className="flex-1 bg-surface-low py-8 px-6">
       <div className="max-w-6xl mx-auto">
@@ -13,16 +56,16 @@ export const PetDetailView = ({ navigate }: { navigate: (v: string) => void }) =
         <div className="bg-surface rounded-3xl overflow-hidden shadow-sm border border-outline/10">
           {/* Header/Banner */}
           <div className="relative h-64 md:h-96 bg-surface-high">
-            <img src={IMAGES.petMax} alt="Max" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            <img src={displayPet.image || IMAGES.petMax} alt={displayPet.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 text-surface">
               <div className="flex items-center gap-3 mb-2">
-                <span className="bg-error px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Perdido</span>
+                <span className={displayPet.status === 'lost' ? "bg-error px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider" : "bg-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"}>{displayPet.status === 'lost' ? 'Perdido' : 'Encontrado'}</span>
                 <span className="bg-surface/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                  <Clock size={14} /> Hace 2 días
+                  <Clock size={14} /> {displayPet.timeAgo || 'Recientemente'}
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold">Max</h1>
+              <h1 className="text-4xl md:text-5xl font-serif font-bold">{displayPet.name}</h1>
             </div>
             <div className="absolute top-6 right-6 flex gap-3">
               <button className="w-10 h-10 rounded-full bg-surface/20 backdrop-blur-md flex items-center justify-center text-surface hover:bg-surface/40 transition-colors">
@@ -39,26 +82,26 @@ export const PetDetailView = ({ navigate }: { navigate: (v: string) => void }) =
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                   <div className="bg-surface-low p-4 rounded-2xl">
                     <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Tipo</p>
-                    <p className="font-medium text-text">Perro</p>
+                    <p className="font-medium text-text">{displayPet.type}</p>
                   </div>
                   <div className="bg-surface-low p-4 rounded-2xl">
                     <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Raza</p>
-                    <p className="font-medium text-text">Beagle</p>
+                    <p className="font-medium text-text">{displayPet.breed || 'Mestizo'}</p>
                   </div>
                   <div className="bg-surface-low p-4 rounded-2xl">
                     <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Sexo</p>
-                    <p className="font-medium text-text">Macho</p>
+                    <p className="font-medium text-text">{displayPet.gender || 'Desconocido'}</p>
                   </div>
                   <div className="bg-surface-low p-4 rounded-2xl">
                     <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Color</p>
-                    <p className="font-medium text-text">Tricolor</p>
+                    <p className="font-medium text-text">{displayPet.color || 'No especificado'}</p>
                   </div>
                 </div>
                 
                 <div className="mt-8 space-y-4">
                   <h3 className="font-bold text-text">Descripción Adicional</h3>
                   <p className="text-text-variant leading-relaxed">
-                    Max es muy amigable pero puede estar asustado. Llevaba un collar azul con una placa en forma de hueso, pero sin número de teléfono actualizado. Tiene una pequeña cicatriz en la oreja izquierda.
+                    {displayPet.description || 'Sin descripción adicional.'}
                   </p>
                 </div>
               </section>
@@ -158,7 +201,7 @@ export const PetDetailView = ({ navigate }: { navigate: (v: string) => void }) =
                 <h3 className="font-bold text-text flex items-center gap-2">
                   <MapPin size={18} className="text-primary" /> Última Ubicación
                 </h3>
-                <p className="text-sm text-text-variant">Parque Central, cerca de la entrada principal. Visto por última vez corriendo hacia el norte.</p>
+                <p className="text-sm text-text-variant">{displayPet.location}</p>
                 <div className="h-48 bg-surface-high rounded-2xl overflow-hidden border border-outline/20 relative">
                   <img src={IMAGES.miniMap} alt="Mapa" className="w-full h-full object-cover opacity-80" referrerPolicy="no-referrer" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-error rounded-full border-2 border-surface shadow-lg animate-pulse"></div>

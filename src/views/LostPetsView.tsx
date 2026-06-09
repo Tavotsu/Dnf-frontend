@@ -116,7 +116,7 @@ export const LostPetsView = ({ navigate }: { navigate: (v: string) => void }) =>
             ))
           ) : (
             pets.map((pet) => (
-              <div key={pet.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-outline/10 group cursor-pointer" onClick={() => navigate('detail')}>
+              <div key={pet.id} className="bg-surface rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-outline/10 group cursor-pointer" onClick={() => navigate('detail', { id: pet.id })}>
                 <div className="relative h-48 overflow-hidden">
                   <img 
                     src={pet.image} 

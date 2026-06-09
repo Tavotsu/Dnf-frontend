@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { PetDetailView } from './PetDetailView';
+import { PetDetailView } from '../../views/PetDetailView';
 
 describe('PetDetailView Component', () => {
   const mockNavigate = vi.fn();

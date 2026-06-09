@@ -22,22 +22,28 @@ const ViewLoader = () => (
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
+  const [viewData, setViewData] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const navigate = (view: string, data?: any) => {
+    setCurrentView(view);
+    setViewData(data || null);
+  };
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-background text-text">
-      <Navbar currentView={currentView} navigate={setCurrentView} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+      <Navbar currentView={currentView} navigate={navigate} isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <main className="flex-1 flex flex-col pt-16 md:pt-20">
         <Suspense fallback={<ViewLoader />}>
-          {currentView === 'home' && <HomeView navigate={setCurrentView} />}
-          {currentView === 'login' && <AuthView type="login" navigate={setCurrentView} setIsLoggedIn={setIsLoggedIn} />}
-          {currentView === 'register' && <AuthView type="register" navigate={setCurrentView} setIsLoggedIn={setIsLoggedIn} />}
-          {currentView === 'profile' && <UserProfileView navigate={setCurrentView} setIsLoggedIn={setIsLoggedIn} />}
-          {currentView === 'report' && <ReportPetView navigate={setCurrentView} isLoggedIn={isLoggedIn} />}
-          {currentView === 'lost-pets' && <LostPetsView navigate={setCurrentView} />}
+          {currentView === 'home' && <HomeView navigate={navigate} />}
+          {currentView === 'login' && <AuthView type="login" navigate={navigate} setIsLoggedIn={setIsLoggedIn} />}
+          {currentView === 'register' && <AuthView type="register" navigate={navigate} setIsLoggedIn={setIsLoggedIn} />}
+          {currentView === 'profile' && <UserProfileView navigate={navigate} setIsLoggedIn={setIsLoggedIn} />}
+          {currentView === 'report' && <ReportPetView navigate={navigate} isLoggedIn={isLoggedIn} />}
+          {currentView === 'lost-pets' && <LostPetsView navigate={navigate} />}
           {currentView === 'success-stories' && <SuccessStoriesView />}
-          {currentView === 'detail' && <PetDetailView navigate={setCurrentView} />}
-          {currentView === 'map' && <MapView />}
+          {currentView === 'detail' && <PetDetailView navigate={navigate} petId={viewData?.id} />}
+          {currentView === 'map' && <MapView navigate={navigate} />}
         </Suspense>
       </main>
       {currentView !== 'map' && currentView !== 'login' && currentView !== 'register' && currentView !== 'profile' && <Footer />}

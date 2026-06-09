@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AuthView } from './AuthView';
+import { AuthView } from '../../views/AuthView';
 
 describe('AuthView Component', () => {
   const mockNavigate = vi.fn();

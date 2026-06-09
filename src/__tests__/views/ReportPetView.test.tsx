@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ReportPetView } from './ReportPetView';
+import { ReportPetView } from '../../views/ReportPetView';
 
 // Mock react-leaflet components since they require DOM measurements
 vi.mock('react-leaflet', () => ({

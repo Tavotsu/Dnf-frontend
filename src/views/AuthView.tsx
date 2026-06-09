@@ -20,7 +20,7 @@ export const AuthView = ({ type, navigate, setIsLoggedIn }: { type: 'login' | 'r
 
     try {
       if (isLogin) {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('/api/usuarios/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password })

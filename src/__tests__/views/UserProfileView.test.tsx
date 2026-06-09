@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { UserProfileView } from './UserProfileView';
+import { UserProfileView } from '../../views/UserProfileView';
 
 describe('UserProfileView Component', () => {
   const mockNavigate = vi.fn();

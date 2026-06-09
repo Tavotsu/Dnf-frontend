@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import App from './App';
+import App from '../App';
 
 // Mock components to avoid heavy rendering
-vi.mock('./components/Navbar', () => ({
+vi.mock('../components/Navbar', () => ({
   Navbar: ({ currentView, navigate }: any) => (
     <div data-testid="navbar">
       <button onClick={() => navigate('lost-pets')}>Go to Lost Pets</button>
@@ -12,11 +12,11 @@ vi.mock('./components/Navbar', () => ({
   ),
 }));
 
-vi.mock('./views/HomeView', () => ({
+vi.mock('../views/HomeView', () => ({
   HomeView: () => <div data-testid="home-view" />,
 }));
 
-vi.mock('./views/LostPetsView', () => ({
+vi.mock('../views/LostPetsView', () => ({
   LostPetsView: () => <div data-testid="lost-pets-view" />,
 }));
 

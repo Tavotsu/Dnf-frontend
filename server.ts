@@ -29,6 +29,12 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 });
 
+// Función auxiliar para extraer el token
+const getAuthHeaders = (req: express.Request) => {
+  const authHeader = req.headers.authorization;
+  return authHeader ? { Authorization: authHeader } : {};
+};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -39,17 +45,23 @@ async function startServer() {
 
   app.get('/api/pets', async (req, res) => {
     try {
-      const response = await api.get('/api/mascotas', { params: req.query });
+      const response = await api.get('/api/pets', { 
+        params: req.query,
+        headers: getAuthHeaders(req)
+      });
       res.json(response.data);
     } catch (error: any) {
-      console.warn(`[BFF] Backend Spring Boot no disponible en ${SPRING_BOOT_URL}. Usando Mock Data.`);
+      console.warn(`[BFF] Error en /api/pets: ${error.message}. Usando Mock Data.`);
       res.json(mockPets);
     }
   });
 
   app.get('/api/pets/suggestions', async (req, res) => {
     try {
-      const response = await api.get('/api/mascotas/suggestions', { params: req.query });
+      const response = await api.get('/api/pets/suggestions', { 
+        params: req.query,
+        headers: getAuthHeaders(req)
+      });
       res.json(response.data);
     } catch {
       // Filtra mock como fallback para sugerencias
@@ -59,9 +71,29 @@ async function startServer() {
     }
   });
 
+  app.get('/api/pets/:id', async (req, res) => {
+    try {
+      const response = await api.get(`/api/pets/${req.params.id}`, { 
+        headers: getAuthHeaders(req)
+      });
+      res.json(response.data);
+    } catch (error: any) {
+      console.warn(`[BFF] Error en /api/pets/${req.params.id}: ${error.message}. Usando Mock Data.`);
+      const id = parseInt(req.params.id);
+      const pet = mockPets.find(p => p.id === id);
+      if (pet) {
+        res.json(pet);
+      } else {
+        res.status(404).json({ error: 'Not found' });
+      }
+    }
+  });
+
   app.post('/api/pets/report', async (req, res) => {
     try {
-      const response = await api.post('/api/mascotas/report', req.body);
+      const response = await api.post('/api/pets/report', req.body, {
+        headers: getAuthHeaders(req)
+      });
       res.status(response.status).json(response.data);
     } catch (error: any) {
       const newPet = { id: mockPets.length + 1, ...req.body, status: 'lost', timeAgo: 'Recién publicado' };
@@ -70,7 +102,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/auth/login', async (req, res) => {
+  app.post('/api/usuarios/login', async (req, res) => {
     try {
       const response = await api.post('/api/usuarios/login', req.body);
       res.json(response.data);
@@ -86,7 +118,9 @@ async function startServer() {
 
   app.get('/api/notifications', async (req, res) => {
     try {
-      const response = await api.get('/api/notificaciones');
+      const response = await api.get('/api/notificaciones', {
+        headers: getAuthHeaders(req)
+      });
       res.json(response.data);
     } catch {
       res.json(mockNotifications);
@@ -95,7 +129,9 @@ async function startServer() {
 
   app.get('/api/success-stories', async (req, res) => {
     try {
-      const response = await api.get('/api/success-stories');
+      const response = await api.get('/api/success-stories', {
+        headers: getAuthHeaders(req)
+      });
       res.json(response.data);
     } catch {
       res.json([{ id: 1, title: "Historias Offline", content: "El backend no está conectado aún.", image: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=800" }]);

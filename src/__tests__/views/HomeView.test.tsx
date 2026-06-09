@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { HomeView } from './HomeView';
+import { HomeView } from '../../views/HomeView';
 
 describe('HomeView Component', () => {
   it('renders the hero section title', () => {
