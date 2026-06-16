@@ -50,8 +50,8 @@ ENDPOINTS.md      # Documentación detallada de la API (Simulada)
 ## 🔐 Credenciales de Prueba
 
 Para probar el flujo de usuario sin registrarte, puedes usar:
-- **Usuario**: `admin@test.com`
-- **Contraseña**: `password123`
+- **Usuario**: `admin@dnf.cl`
+- **Contraseña**: `Admin123!`
 
 ---
 *Desarrollado con ❤️ para ayudar a nuestros amigos de cuatro patas.*

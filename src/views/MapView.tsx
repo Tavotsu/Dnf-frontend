@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { fetchWithAuth } from '../utils/api';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Search, Plus, Minus, LocateFixed, Loader2 } from 'lucide-react';
@@ -286,6 +286,9 @@ export const MapView = ({ navigate }: { navigate: (v: string, data?: any) => voi
                 click: () => navigate('detail', { id: pet.id })
               }}
             >
+              <Tooltip direction="top" offset={[0, -40]} opacity={1} className="font-sans">
+                <span className="font-bold text-sm text-text">{pet.name}</span> <span className="text-xs text-text-variant ml-1">({pet.breed})</span>
+              </Tooltip>
               <Popup className="rounded-xl">
                 <div className="font-bold text-text cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('detail', { id: pet.id })}>{pet.name}</div>
                 <div className="text-xs text-text-muted">{pet.status === 'lost' ? 'Perdido' : 'Encontrado'} • {pet.timeAgo}</div>

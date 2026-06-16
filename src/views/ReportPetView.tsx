@@ -33,7 +33,8 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
     lastSeenLocation: '',
     date: '',
     time: '',
-    description: ''
+    description: '',
+    image: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,13 +43,24 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
     setIsSubmitting(true);
 
     try {
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : { id: 1 };
+      
       const response = await fetchWithAuth('/api/pets/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          coordinates: position,
-          images: [] // In a real app, this would handle actual file uploads
+          name: formData.name,
+          type: formData.type,
+          breed: formData.breed,
+          color: formData.color,
+          description: formData.description,
+          image: formData.image,
+          latitude: position[0],
+          longitude: position[1],
+          location: formData.lastSeenLocation,
+          status: 'lost',
+          usuarioId: parseInt(String(user.id).replace(/\D/g, '')) || 1
         })
       });
 
@@ -68,6 +80,17 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (!isLoggedIn) {
@@ -105,10 +128,17 @@ export const ReportPetView = ({ isLoggedIn, navigate }: { isLoggedIn: boolean, n
               <Camera className="text-primary" /> Fotos de la mascota
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="aspect-square rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 flex flex-col items-center justify-center text-primary cursor-pointer hover:bg-primary/10 transition-colors">
-                <Camera size={32} className="mb-2" />
-                <span className="text-sm font-medium">Añadir foto</span>
-              </div>
+              <label className="aspect-square rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 flex flex-col items-center justify-center text-primary cursor-pointer hover:bg-primary/10 transition-colors">
+                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                {formData.image ? (
+                  <img src={formData.image} alt="Preview" className="w-full h-full object-cover rounded-2xl" />
+                ) : (
+                  <>
+                    <Camera size={32} className="mb-2" />
+                    <span className="text-sm font-medium">Añadir foto</span>
+                  </>
+                )}
+              </label>
               {[1, 2, 3].map(i => (
                 <div key={i} className="aspect-square rounded-2xl border border-outline/20 bg-surface-high flex items-center justify-center text-text-muted">
                   <span className="text-xs">Opcional</span>

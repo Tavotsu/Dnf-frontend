@@ -1,9 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Edit3, List, CheckCircle, Settings, LogOut, Camera, HeartHandshake } from 'lucide-react';
 import { IMAGES } from '../constants';
+import { fetchWithAuth } from '../utils/api';
 
 export const UserProfileView = ({ navigate, setIsLoggedIn }: { navigate: (v: string) => void, setIsLoggedIn: (v: boolean) => void }) => {
   const [activeTab, setActiveTab] = useState('reports');
+  const [reports, setReports] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : { name: 'Usuario', email: 'usuario@ejemplo.com', id: 1 };
+  const initials = user.name ? user.name.substring(0, 2).toUpperCase() : 'US';
+
+  useEffect(() => {
+    const fetchUserReports = async () => {
+      try {
+        setIsLoading(true);
+        if (!user || !user.id) return;
+
+        const userId = parseInt(String(user.id).replace(/\D/g, '')) || 1;
+        const response = await fetchWithAuth(`/api/pets/usuario/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setReports(data);
+        }
+      } catch (err) {
+        console.error('Error fetching user reports:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (activeTab === 'reports') {
+      fetchUserReports();
+    }
+  }, [activeTab]);
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -16,12 +47,12 @@ export const UserProfileView = ({ navigate, setIsLoggedIn }: { navigate: (v: str
         {/* Header Profile */}
         <div className="bg-surface rounded-2xl p-6 md:p-8 shadow-sm border border-outline/10 flex flex-col md:flex-row items-center gap-6 mb-8">
           <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary text-3xl font-bold shrink-0">
-            JP
+            {initials}
           </div>
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-2xl font-serif font-bold text-text">Juan Pérez</h1>
+            <h1 className="text-2xl font-serif font-bold text-text">{user.name}</h1>
             <p className="text-text-variant flex items-center justify-center md:justify-start gap-2 mt-1">
-              <Mail size={16} /> juan.perez@ejemplo.com
+              <Mail size={16} /> {user.email}
             </p>
             <p className="text-sm text-text-muted mt-2">Miembro desde Marzo 2024</p>
           </div>
@@ -57,33 +88,39 @@ export const UserProfileView = ({ navigate, setIsLoggedIn }: { navigate: (v: str
                     + Nuevo Reporte
                   </button>
                 </div>
-                {/* Mock list of reports */}
+                {/* Real list of reports */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 border border-outline/20 rounded-xl hover:border-primary/30 transition-colors cursor-pointer" onClick={() => navigate('detail')}>
-                    <div className="w-16 h-16 rounded-lg bg-surface-high overflow-hidden shrink-0">
-                      <img src={IMAGES.petMax} alt="Max" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  {isLoading ? (
+                    <div className="text-center py-8 text-text-variant">
+                      Cargando reportes...
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-text">Max</h3>
-                      <p className="text-sm text-text-variant">Perro - Beagle • Perdido hace 2 días</p>
+                  ) : reports.length === 0 ? (
+                    <div className="text-center py-8 text-text-variant">
+                      No tienes reportes activos en este momento.
                     </div>
-                    <div className="px-3 py-1 bg-error/10 text-error rounded-full text-xs font-bold">
-                      Buscando
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 p-4 border border-outline/20 rounded-xl hover:border-primary/30 transition-colors cursor-pointer">
-                    <div className="w-16 h-16 rounded-lg bg-surface-high overflow-hidden shrink-0 flex items-center justify-center text-text-muted">
-                      <Camera size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-text">Luna</h3>
-                      <p className="text-sm text-text-variant">Gato - Siames • Perdida hace 1 semana</p>
-                    </div>
-                    <div className="px-3 py-1 bg-error/10 text-error rounded-full text-xs font-bold">
-                      Buscando
-                    </div>
-                  </div>
+                  ) : (
+                    reports.map((report) => (
+                      <div key={report.id} className="flex items-center gap-4 p-4 border border-outline/20 rounded-xl hover:border-primary/30 transition-colors cursor-pointer" onClick={() => navigate('detail')}>
+                        <div className="w-16 h-16 rounded-lg bg-surface-high overflow-hidden shrink-0 flex items-center justify-center text-text-muted">
+                          {report.image && !report.image.startsWith('http') && report.image.length > 100 ? (
+                            <img src={report.image} alt={report.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Camera size={24} />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-text">{report.name}</h3>
+                          <p className="text-sm text-text-variant capitalize">
+                            {report.type === 'dog' ? 'Perro' : report.type === 'cat' ? 'Gato' : report.type === 'bird' ? 'Ave' : 'Otro'} 
+                            {report.breed ? ` - ${report.breed}` : ''} • {report.createdAt ? `Reportado el ${new Date(report.createdAt).toLocaleDateString()}` : 'Reportado recientemente'}
+                          </p>
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold ${report.status === 'lost' ? 'bg-error/10 text-error' : 'bg-success/10 text-success'}`}>
+                          {report.status === 'lost' ? 'Buscando' : 'Encontrado'}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}

@@ -32,8 +32,8 @@ describe('AuthView Component', () => {
 
     render(<AuthView type="login" navigate={mockNavigate} setIsLoggedIn={mockSetIsLoggedIn} />);
     
-    fireEvent.change(screen.getByPlaceholderText('tu@correo.com'), { target: { value: 'admin@test.com' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByPlaceholderText('tu@correo.com'), { target: { value: 'admin@dnf.cl' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'Admin123!' } });
     
     fireEvent.click(screen.getByText('Iniciar Sesión'));
 
@@ -67,7 +67,7 @@ describe('AuthView Component', () => {
     
     fireEvent.change(screen.getByPlaceholderText('Juan Pérez'), { target: { value: 'Test User' } });
     fireEvent.change(screen.getByPlaceholderText('tu@correo.com'), { target: { value: 'test@test.com' } });
-    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'Admin123!' } });
     
     fireEvent.click(screen.getByText('Crear Cuenta'));
 

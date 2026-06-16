@@ -8,8 +8,8 @@ export const AuthView = ({ type, navigate, setIsLoggedIn }: { type: 'login' | 'r
   const [error, setError] = useState('');
 
   // Hardcoded credentials
-  const GENERIC_EMAIL = 'admin@test.com';
-  const GENERIC_PASSWORD = 'password123';
+  const GENERIC_EMAIL = 'admin@dnf.cl';
+  const GENERIC_PASSWORD = 'Admin123!';
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -28,7 +28,11 @@ export const AuthView = ({ type, navigate, setIsLoggedIn }: { type: 'login' | 'r
 
         if (response.ok) {
           const data = await response.json();
-          localStorage.setItem('token', data.token);
+          // Extract token from ApiResponse (data.data) or directly if fallback
+          const token = data.data ? data.data.token : data.token;
+          const user = data.data ? data.data.usuario : data.user;
+          localStorage.setItem('token', token);
+          if (user) localStorage.setItem('user', JSON.stringify(user));
           setIsLoggedIn(true);
           navigate('home');
         } else {

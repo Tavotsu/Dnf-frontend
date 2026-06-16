@@ -69,8 +69,8 @@ Autentica al usuario en la plataforma. Actualmente utiliza credenciales fijas pa
 - **Payload (Request):**
 ```json
 {
-  "email": "admin@test.com",
-  "password": "password123"
+  "email": "admin@dnf.cl",
+  "password": "Admin123!"
 }
 ```
 - **Respuesta (200 OK):**

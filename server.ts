@@ -15,8 +15,10 @@ const SPRING_BOOT_URL = process.env.VITE_SPRING_BOOT_API_URL || 'http://localhos
 
 // Datos Mock (se usarán si el backend no responde o no está configurado)
 let mockPets = [
-  { id: 1, name: "Max", type: "Perro", breed: "Beagle", gender: "Macho", status: "lost", location: "Parque Central, Puerto Montt", coordinates: [-41.4693, -72.9424] as [number, number], timeAgo: "Hace 2 horas", image: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=800" },
-  { id: 2, name: "Luna", type: "Gato", breed: "Mestizo", gender: "Hembra", status: "lost", location: "Avenida Italia, Puerto Varas", coordinates: [-41.3193, -72.9824] as [number, number], timeAgo: "Hace 5 horas", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800" }
+  { id: 1, name: "Max", type: "Perro", breed: "Beagle", gender: "Macho", status: "lost", location: "Costanera, Puerto Montt", coordinates: [-41.4725, -72.9391] as [number, number], timeAgo: "Hace 2 horas", image: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?q=80&w=800" },
+  { id: 2, name: "Luna", type: "Gato", breed: "Siamés", gender: "Hembra", status: "lost", location: "Plaza de Armas, Puerto Montt", coordinates: [-41.4696, -72.9416] as [number, number], timeAgo: "Hace 5 horas", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=800" },
+  { id: 3, name: "Rocky", type: "Perro", breed: "Mestizo", gender: "Macho", status: "lost", location: "Terminal de Buses, Puerto Montt", coordinates: [-41.4745, -72.9348] as [number, number], timeAgo: "Ayer", image: "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?q=80&w=800" },
+  { id: 4, name: "Milo", type: "Gato", breed: "Persa", gender: "Macho", status: "lost", location: "Angelmó, Puerto Montt", coordinates: [-41.4839, -72.9554] as [number, number], timeAgo: "Hace 3 días", image: "https://images.unsplash.com/photo-1513245535761-077a2dd8a6f6?q=80&w=800" }
 ];
 
 let mockNotifications = [
@@ -35,11 +37,27 @@ const getAuthHeaders = (req: express.Request) => {
   return authHeader ? { Authorization: authHeader } : {};
 };
 
+let backendConnected = false;
+
+const handleApiError = (error: any, res: express.Response, fallback: () => void) => {
+  if (error.response) {
+    backendConnected = true;
+    res.status(error.response.status).json(error.response.data);
+    return;
+  }
+  if (backendConnected) {
+    res.status(503).json({ message: 'Conexión con el backend perdida.' });
+    return;
+  }
+  fallback();
+};
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(express.json());
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   // --- API Routes (BFF Layer con Fallback) ---
 
@@ -49,10 +67,21 @@ async function startServer() {
         params: req.query,
         headers: getAuthHeaders(req)
       });
+      backendConnected = true;
       res.json(response.data);
     } catch (error: any) {
-      console.warn(`[BFF] Error en /api/pets: ${error.message}. Usando Mock Data.`);
-      res.json(mockPets);
+      handleApiError(error, res, () => {
+        console.warn(`[BFF] Error en /api/pets: ${error.message}. Usando Mock Data.`);
+        let filteredPets = [...mockPets];
+        if (req.query.status) {
+          filteredPets = filteredPets.filter(p => p.status === req.query.status);
+        }
+        if (req.query.query) {
+          const q = String(req.query.query).toLowerCase();
+          filteredPets = filteredPets.filter(p => p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q) || p.type.toLowerCase().includes(q));
+        }
+        res.json(filteredPets);
+      });
     }
   });
 
@@ -62,12 +91,14 @@ async function startServer() {
         params: req.query,
         headers: getAuthHeaders(req)
       });
+      backendConnected = true;
       res.json(response.data);
-    } catch {
-      // Filtra mock como fallback para sugerencias
-      const q = String(req.query.q || '').toLowerCase();
-      const suggestions = mockPets.filter(p => p.name.toLowerCase().includes(q));
-      res.json(suggestions);
+    } catch (error: any) {
+      handleApiError(error, res, () => {
+        const q = String(req.query.q || '').toLowerCase();
+        const suggestions = mockPets.filter(p => p.name.toLowerCase().includes(q));
+        res.json(suggestions);
+      });
     }
   });
 
@@ -76,16 +107,19 @@ async function startServer() {
       const response = await api.get(`/api/pets/${req.params.id}`, { 
         headers: getAuthHeaders(req)
       });
+      backendConnected = true;
       res.json(response.data);
     } catch (error: any) {
-      console.warn(`[BFF] Error en /api/pets/${req.params.id}: ${error.message}. Usando Mock Data.`);
-      const id = parseInt(req.params.id);
-      const pet = mockPets.find(p => p.id === id);
-      if (pet) {
-        res.json(pet);
-      } else {
-        res.status(404).json({ error: 'Not found' });
-      }
+      handleApiError(error, res, () => {
+        console.warn(`[BFF] Error en /api/pets/${req.params.id}: ${error.message}. Usando Mock Data.`);
+        const id = parseInt(req.params.id);
+        const pet = mockPets.find(p => p.id === id);
+        if (pet) {
+          res.json(pet);
+        } else {
+          res.status(404).json({ error: 'Not found' });
+        }
+      });
     }
   });
 
@@ -94,25 +128,30 @@ async function startServer() {
       const response = await api.post('/api/pets/report', req.body, {
         headers: getAuthHeaders(req)
       });
+      backendConnected = true;
       res.status(response.status).json(response.data);
     } catch (error: any) {
-      const newPet = { id: mockPets.length + 1, ...req.body, status: 'lost', timeAgo: 'Recién publicado' };
-      mockPets.push(newPet);
-      res.status(201).json({ id: newPet.id, status: 'success', message: 'Guardado localmente (Backend offline)' });
+      handleApiError(error, res, () => {
+        const newPet = { id: mockPets.length + 1, ...req.body, status: 'lost', timeAgo: 'Recién publicado' };
+        mockPets.push(newPet);
+        res.status(201).json({ id: newPet.id, status: 'success', message: 'Guardado localmente (Backend offline)' });
+      });
     }
   });
 
   app.post('/api/usuarios/login', async (req, res) => {
     try {
       const response = await api.post('/api/usuarios/login', req.body);
+      backendConnected = true;
       res.json(response.data);
     } catch (error: any) {
-      // Credenciales de prueba si el backend falla
-      if (req.body.email === 'admin@test.com') {
-        res.json({ token: 'mock-token', user: { id: 'u1', name: 'Juan (Modo Offline)', email: req.body.email } });
-      } else {
-        res.status(401).json({ message: 'Modo Offline: Usa admin@test.com' });
-      }
+      handleApiError(error, res, () => {
+        if (req.body.email === 'admin@test.com' || (req.body.email === 'admin@dnf.cl' && req.body.password === 'Admin123!')) {
+          res.json({ token: 'mock-token', user: { id: 1, name: 'Admin (Modo Offline)', email: req.body.email } });
+        } else {
+          res.status(401).json({ message: 'Modo Offline: Usa admin@dnf.cl / Admin123!' });
+        }
+      });
     }
   });
 
@@ -121,9 +160,12 @@ async function startServer() {
       const response = await api.get('/api/notificaciones', {
         headers: getAuthHeaders(req)
       });
+      backendConnected = true;
       res.json(response.data);
-    } catch {
-      res.json(mockNotifications);
+    } catch (error: any) {
+      handleApiError(error, res, () => {
+        res.json(mockNotifications);
+      });
     }
   });
 
@@ -132,9 +174,12 @@ async function startServer() {
       const response = await api.get('/api/success-stories', {
         headers: getAuthHeaders(req)
       });
+      backendConnected = true;
       res.json(response.data);
-    } catch {
-      res.json([{ id: 1, title: "Historias Offline", content: "El backend no está conectado aún.", image: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=800" }]);
+    } catch (error: any) {
+      handleApiError(error, res, () => {
+        res.json([{ id: 1, title: "Historias Offline", content: "El backend no está conectado aún.", image: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=800" }]);
+      });
     }
   });
 
