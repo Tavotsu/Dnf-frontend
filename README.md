@@ -1,99 +1,99 @@
-# Sanos y Salvos - Frontend Application
+# Sanos y Salvos - Aplicación Frontend
 
-## Introduction
+## Introducción
 
-Sanos y Salvos (formerly known as DNF - Dogs n' Friends) is a modern web application designed to help families reunite with their lost pets. The platform combines community vigilance with advanced geolocation tools to ensure that no pet is far from home for long. 
+Sanos y Salvos (anteriormente conocido como DNF - Dogs n' Friends) es una aplicación web moderna diseñada para ayudar a las familias a reencontrarse con sus mascotas perdidas. La plataforma combina la vigilancia comunitaria con herramientas avanzadas de geolocalización para asegurar que ninguna mascota pase mucho tiempo lejos de casa.
 
-This repository contains the frontend application, built with a modern React stack, emphasizing performance, responsive design, and user experience. It integrates seamlessly with the backend microservices to provide real-time reporting, interactive maps, and community-driven features.
+Este repositorio contiene la aplicación frontend, construida con un stack moderno de React, priorizando el rendimiento, el diseño responsivo y la experiencia del usuario. Se integra de manera fluida con los microservicios del backend para proporcionar reportes en tiempo real, mapas interactivos y características enfocadas en la comunidad.
 
-## Core Features
+## Características Principales
 
-- **Detailed Lost Pet Reporting**: Provides a comprehensive form allowing users to submit detailed reports. This includes uploading multiple photographs, describing medical or distinctive features, and pinpointing the exact location of the disappearance using an interactive map interface.
-- **Interactive Sightings Map**: Integrates Leaflet and OpenStreetMap for real-time visualization of lost pets and recent sightings within a specific geographical area. Users can track potential sightings and coordinate search efforts directly from the map.
-- **Notification System**: Keeps users informed about potential matches, new sightings, comments on their reports, and other relevant community updates.
-- **Success Stories**: A dedicated section where users can share their reunion stories, fostering hope and motivating the community to continue their collaborative efforts.
-- **User Profile Management**: Secure user profiles that allow individuals to manage their active reports, configure notification preferences, and review their history of found pets.
-- **Responsive and Premium Design**: Built with a sophisticated user interface using a custom "Sandstone" color palette. The application is fully responsive, ensuring an optimal experience across desktop, tablet, and mobile devices.
+- **Reporte Detallado de Mascotas Perdidas**: Proporciona un formulario completo que permite a los usuarios enviar reportes detallados. Esto incluye la subida de múltiples fotografías, descripción de características médicas o distintivas, y la ubicación exacta de la desaparición utilizando una interfaz de mapa interactivo.
+- **Mapa Interactivo de Avistamientos**: Integra Leaflet y OpenStreetMap para la visualización en tiempo real de mascotas perdidas y avistamientos recientes dentro de un área geográfica específica. Los usuarios pueden rastrear posibles avistamientos y coordinar esfuerzos de búsqueda directamente desde el mapa.
+- **Sistema de Notificaciones**: Mantiene a los usuarios informados sobre posibles coincidencias, nuevos avistamientos, comentarios en sus reportes y otras actualizaciones relevantes de la comunidad.
+- **Historias de Éxito**: Una sección dedicada donde los usuarios pueden compartir sus historias de reencuentro, fomentando la esperanza y motivando a la comunidad a continuar sus esfuerzos colaborativos.
+- **Gestión de Perfil de Usuario**: Perfiles de usuario seguros que permiten a las personas administrar sus reportes activos, configurar preferencias de notificación y revisar su historial de mascotas encontradas.
+- **Diseño Premium y Responsivo**: Construido con una interfaz de usuario sofisticada utilizando una paleta de colores personalizada "Sandstone". La aplicación es completamente responsiva, asegurando una experiencia óptima en computadoras de escritorio, tabletas y dispositivos móviles.
 
-## Technology Stack
+## Stack Tecnológico
 
-- **Framework**: React (version 18 or higher) utilizing TypeScript for robust type checking and better developer experience.
-- **Styling**: Tailwind CSS (version 4.0) for utility-first styling and custom design system implementation.
-- **Routing**: Client-side routing managed internally with a custom state-based router.
-- **Maps Integration**: Leaflet paired with React-Leaflet for rendering dynamic, interactive maps.
-- **Animations**: Framer Motion (via motion/react) to provide smooth micro-interactions and page transitions.
-- **Iconography**: Lucide React for consistent and scalable vector icons.
-- **Build Tool**: Vite, providing a fast and optimized development server and production build process.
-- **Testing**: Vitest and React Testing Library for comprehensive unit and integration testing.
+- **Framework**: React (versión 18 o superior) utilizando TypeScript para comprobación robusta de tipos y mejor experiencia de desarrollo.
+- **Estilos**: Tailwind CSS (versión 4.0) para un diseño basado en utilidades e implementación del sistema de diseño personalizado.
+- **Enrutamiento**: Enrutamiento del lado del cliente gestionado internamente con un enrutador basado en estado.
+- **Integración de Mapas**: Leaflet junto con React-Leaflet para renderizar mapas dinámicos e interactivos.
+- **Animaciones**: Framer Motion (a través de motion/react) para proporcionar micro-interacciones suaves y transiciones de página.
+- **Iconografía**: Lucide React para íconos vectoriales consistentes y escalables.
+- **Herramienta de Construcción**: Vite, proporcionando un servidor de desarrollo rápido y optimizado, así como un proceso de construcción para producción.
+- **Pruebas**: Vitest y React Testing Library para pruebas unitarias y de integración exhaustivas.
 
-## Project Structure
+## Estructura del Proyecto
 
-The codebase is organized as follows to maintain separation of concerns and scalability:
+El código base está organizado de la siguiente manera para mantener la separación de responsabilidades y la escalabilidad:
 
 ```text
 /src
-  /__tests__      # Unit and integration tests for components and views
-  /components     # Reusable UI components (Navbar, Footer, NotificationMenu, etc.)
-  /constants      # Global constants, configuration values, and static assets references
-  /lib            # Shared utilities and helper functions
-  /utils          # API communication helpers and authentication utilities
-  /views          # Main application views/pages (Home, Report, Map, Auth, UserProfile, etc.)
-  App.tsx         # Root component responsible for state management and view orchestration
-  index.css       # Global stylesheet, Tailwind directives, and theme configuration
-  main.tsx        # Application entry point
-/public           # Static public assets (images, favicons)
-ENDPOINTS.md      # Documentation of the REST API endpoints and integration details
+  /__tests__      # Pruebas unitarias y de integración para componentes y vistas
+  /components     # Componentes de interfaz de usuario reutilizables (Navbar, Footer, NotificationMenu, etc.)
+  /constants      # Constantes globales, valores de configuración y referencias a activos estáticos
+  /lib            # Utilidades compartidas y funciones de ayuda
+  /utils          # Ayudantes de comunicación con la API y utilidades de autenticación
+  /views          # Vistas/páginas principales de la aplicación (Home, Report, Map, Auth, UserProfile, etc.)
+  App.tsx         # Componente raíz responsable de la gestión de estado y orquestación de vistas
+  index.css       # Hoja de estilos global, directivas de Tailwind y configuración del tema
+  main.tsx        # Punto de entrada de la aplicación
+/public           # Activos públicos estáticos (imágenes, favicons)
+ENDPOINTS.md      # Documentación de los endpoints de la API REST y detalles de integración
 ```
 
-## Setup and Installation
+## Configuración e Instalación
 
-Follow these instructions to set up the project locally.
+Sigue estas instrucciones para configurar el proyecto localmente.
 
-### Prerequisites
+### Requisitos Previos
 
-- Node.js (version 18.x or higher is recommended)
-- npm or yarn package manager
+- Node.js (se recomienda la versión 18.x o superior)
+- Gestor de paquetes npm o yarn
 
-### Installation Steps
+### Pasos de Instalación
 
-1. Clone the repository and navigate to the project directory.
-2. Install the required dependencies:
+1. Clona el repositorio y navega al directorio del proyecto.
+2. Instala las dependencias requeridas:
    ```bash
    npm install
    ```
 
-### Running the Development Server
+### Ejecutar el Servidor de Desarrollo
 
-Start the Vite development server by running:
+Inicia el servidor de desarrollo de Vite ejecutando:
 ```bash
 npm run dev
 ```
-Once the server is running, you can access the application in your browser at `http://localhost:3000` (or the port specified in your terminal).
+Una vez que el servidor esté en funcionamiento, puedes acceder a la aplicación en tu navegador en `http://localhost:3000` (o el puerto especificado en tu terminal).
 
-### Building for Production
+### Construcción para Producción
 
-To create an optimized production build:
+Para crear una construcción optimizada para producción:
 ```bash
 npm run build
 ```
-The compiled files will be generated in the `dist` directory, ready to be served by any static file hosting service.
+Los archivos compilados se generarán en el directorio `dist`, listos para ser servidos por cualquier servicio de alojamiento de archivos estáticos.
 
-### Running Tests
+### Ejecutar Pruebas
 
-To execute the test suite:
+Para ejecutar la suite de pruebas:
 ```bash
 npm run test
 ```
 
-## Authentication and Testing Credentials
+## Autenticación y Credenciales de Prueba
 
-The application connects to a backend API that requires authentication for certain actions (like creating a report or viewing the user profile). For testing purposes during development, you can use the following seeded credentials:
+La aplicación se conecta a una API backend que requiere autenticación para ciertas acciones (como crear un reporte o ver el perfil de usuario). Para propósitos de prueba durante el desarrollo, puedes utilizar las siguientes credenciales preestablecidas:
 
-- **Email**: admin@dnf.cl
-- **Password**: Admin123!
+- **Correo electrónico**: admin@dnf.cl
+- **Contraseña**: Admin123!
 
-Alternatively, you can register a new account through the application's registration view.
+Alternativamente, puedes registrar una nueva cuenta a través de la vista de registro de la aplicación.
 
-## API Integration
+## Integración con la API
 
-The frontend communicates with a microservices-based backend via an API Gateway. All requests are routed through `/api/*`. Authentication is handled via JWT tokens, which are stored in the browser's local storage and attached to requests using the `fetchWithAuth` utility located in `src/utils/api.ts`. For more details on the available endpoints, refer to the `ENDPOINTS.md` file.
+El frontend se comunica con un backend basado en microservicios a través de un API Gateway. Todas las solicitudes se enrutan a través de `/api/*`. La autenticación se maneja mediante tokens JWT, que se almacenan en el almacenamiento local (local storage) del navegador y se adjuntan a las solicitudes utilizando la utilidad `fetchWithAuth` ubicada en `src/utils/api.ts`. Para más detalles sobre los endpoints disponibles, consulta el archivo `ENDPOINTS.md`.
